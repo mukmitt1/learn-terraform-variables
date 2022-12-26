@@ -21,11 +21,11 @@ module "vpc" {
   cidr = var.vpc_cidr_block
 
   azs             = data.aws_availability_zones.available.names
-  private_subnets = ["10.0.101.0/24", "10.0.102.0/24"]
-  public_subnets  = ["10.0.1.0/24", "10.0.2.0/24"]
+  private_subnets = slice(var.private_subnet_cidr_blocks, 0, var.private_subnet_count)  
+  public_subnets  = slice(var.public_subnet_cidr_blocks, 0, var.public_subnet_count)
 
   enable_nat_gateway = true
-  enable_vpn_gateway = false
+  enable_vpn_gateway = var.enable_vpn_gateway
 
   tags = {
     project     = "project-alpha",
@@ -44,8 +44,8 @@ module "app_security_group" {
   ingress_cidr_blocks = module.vpc.public_subnets_cidr_blocks
 
   tags = {
-    project     = "project-alpha",
-    environment = "dev"
+    project     = var.resource_tags["project"],
+    environment = var.resource_tags["environment"]
   }
 }
 
@@ -111,7 +111,7 @@ module "ec2_instances" {
 
   depends_on = [module.vpc]
 
-  instance_count     = 2
+  instance_count     = var.instance_count
   instance_type      = "t2.micro"
   subnet_ids         = module.vpc.private_subnets[*]
   security_group_ids = [module.app_security_group.this_security_group_id]
