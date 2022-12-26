@@ -71,7 +71,7 @@ variable "resource_tags" {
   type        = map(string)
   default     = {
     project     = "project-alpha",
-    environment = "development"
+    environment = "dev"
   }
 
 
